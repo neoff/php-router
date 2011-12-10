@@ -67,7 +67,7 @@ You may wish for the class and/or method to be dynamic. This is most useful when
 
     //This route will match any 3 part url such as '/foo/bar/1', '/foo/bar/red', etc.
     $route = new Route( '/:class/:method/:id' );
-    $route->setMapClass( ':class' )->setMapMethod( ':method' )
+    $route->addDynamicElement( ':class', ':class' )->addDynamicElement( ':method', ':method' )
           ->addDynamicElement( ':id', ':id' );
 
 Add as many routes as you need. Route matching is done in the order they are added. So, put the most specific routes first and the most generic route last.
