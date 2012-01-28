@@ -3,85 +3,44 @@
 include_once(dirname(__FILE__) . '/../lib/Route.php');
 include_once(dirname(__FILE__) . '/../lib/Router.php');
 
-class MockRoute_GetLink extends Route
-{
-    public function getDynamicElements(){
-        return array(
-            ':class'    => ':class',
-            ':method'   => ':method',
-            ':id'       => ':id'
-        );
-    }
-
-    public function getPath() {
-        return '/:class/:method/:id';
-    }
-}
-
-class MockRoute_FindRoute extends Route
-{
-    public function __construct( $path ) {
-        $this->path = $path;
-    }
-
-    public function matchMap() {
-        return TRUE;
-    }
-
-    public function getPath() {
-        return $this->path;
-    }
-}
-
-class MockRoute_FailToFindRoute extends Route
-{
-
-    public function matchMap() {
-        return FALSE;
-    }
-
-    public function getPath() {
-        return '/find/this/route';
-    }
-}
-
-class MockRoute_FindRouteInManyRoutesTrue extends Route
-{
-    public function matchMap() {
-        return TRUE;
-    }
-}
-
-class MockRoute_FindRouteInManyRoutesFalse extends Route
-{
-    public function matchMap() {
-        return FALSE;
-    }
-}
-
 /*----------------------------------------------------------------------------*/
 
 class RouterTest extends PHPUnit_Framework_TestCase
 {
+    /**
+     * Adding a route by name should behave as expected 
+     */
     public function testAddRoute()
     {
-        $router = new Router;
-
         $route = $this->getMock('Route');
-
+        
+        $router = new Router;
+        $routesBeforeAdd = $router->getRoutes();
         $router->addRoute( 'myroute', $route );
-
         $routes = $router->getRoutes();
         
+        $this->assertFalse(array_key_exists('myroute', $routesBeforeAdd));
         $this->assertTrue( array_key_exists('myroute', $routes));
     }
-
-    public function testGetLink()
+    
+    /**
+     * The correct url should be returned when using a named route 
+     */
+    public function testGetUrl()
     {
+        $route = $this->getMock('Route');
+        $route->expects($this->atLeastOnce())
+              ->method('getDynamicElements')
+              ->will($this->returnValue(array(
+                  ':class'    => ':class',
+                  ':method'   => ':method',
+                  ':id'       => ':id'
+              )));
+        $route->expects($this->atLeastOnce())
+              ->method('getPath')
+              ->will($this->returnValue('/:class/:method/:id'));
+
         $router = new Router;
-
-        $route = new MockRoute_GetLink();
-
         $router->addRoute( 'myroute', $route );
 
         $url = $router->getUrl( 'myroute', array(
@@ -91,23 +50,6 @@ class RouterTest extends PHPUnit_Framework_TestCase
         ));
         
         $this->assertSame('/myclass/mymethod/1', $url);
-    }
-
-    public function testFailGetLink()
-    {
-        $router = new Router;
-
-        $route = new MockRoute_GetLink();
-
-        $router->addRoute( 'myroute', $route );
-        
-        //should create '/myclass/mymethod/1'
-        $url = $router->getUrl( 'myroute', array(
-            ':class'    => 'myclass',
-            ':method'   => 'mymethod',
-            ':id'        => '1'
-        ));
-        
         $this->assertNotSame('/myclass/mymethod/2', $url);
     }
 
@@ -116,14 +58,12 @@ class RouterTest extends PHPUnit_Framework_TestCase
      */
     public function testGetUrlNamedRouteDoesNotExist()
     {
+        $route = $this->getMock('Route');
+
         $router = new Router;
-
-        $route = new MockRoute_GetLink();
-
         $router->addRoute( 'myroute', $route );
-
-        //a php error should be triggered
-        $failed_url = $router->getUrl( 'not_there', array(
+        
+        $router->getUrl( 'not_there', array(
             ':class'    => 'myclass',
             ':method'   => 'mymethod',
             ':id'       => 1
@@ -135,13 +75,19 @@ class RouterTest extends PHPUnit_Framework_TestCase
      */
     public function testGetUrlWrongArgumentForNamedRoute()
     {
-        $router = new Router;
+        $route = $this->getMock('Route');
+        $route->expects($this->atLeastOnce())
+              ->method('getDynamicElements')
+              ->will($this->returnValue(array(
+                  ':class'    => ':class',
+                  ':method'   => ':method',
+                  ':id'       => ':id'
+              )));
         
-        $route = new MockRoute_GetLink();
-
+        $router = new Router;
         $router->addRoute( 'myroute', $route );
 
-        $failed_url = $router->getUrl( 'myroute', array(
+        $router->getUrl( 'myroute', array(
             ':class'    => 'myclass',
             ':method'   => 'mymethod',
             ':wrong'    => 1
@@ -153,29 +99,38 @@ class RouterTest extends PHPUnit_Framework_TestCase
      */
     public function testGetUrlWrongNumberOfArgumentsForNamedRoutes()
     {
+        $route = $this->getMock('Route');
+        $route->expects($this->atLeastOnce())
+              ->method('getDynamicElements')
+              ->will($this->returnValue(array(
+                  ':class'    => ':class',
+                  ':method'   => ':method',
+                  ':id'       => ':id'
+              )));
+
         $router = new Router;
-
-        $route = new MockRoute_GetLink();
-
         $router->addRoute( 'myroute', $route );
 
-        $failed_url = $router->getUrl( 'myroute', array(
+        $router->getUrl( 'myroute', array(
             ':class'    => 'myclass',
             ':method'   => 'mymethod'
         ));
     }
 
     /**
-     * @depends testAddRoute
+     * Find a route
      */
     public function testFindRoute()
     {
-        $router = new Router;
-
         $path = '/find/this/class';
         
-        $route = new MockRoute_FindRoute($path);
+        $route = $this->getMock('Route');
+        $route->expects($this->atLeastOnce())
+              ->method('matchMap')
+              ->with($this->equalTo($path))
+              ->will($this->returnValue(true));
 
+        $router = new Router;
         $router->addRoute( 'myroute', $route );
 
         $found_route = $router->findRoute( $path );
@@ -185,67 +140,107 @@ class RouterTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @depends testAddRoute
+     * When no matching routes exist, throw exception
+     * 
      * @expectedException RouteNotFoundException
      */
     public function testFailToFindRoute()
     {
+        $find_path = '/fail/to/find/this/route';
+        
+        $route = $this->getMock('Route');
+        $route->expects($this->atLeastOnce())
+              ->method('matchMap')
+              ->with($this->equalTo($find_path))
+              ->will($this->returnValue(false));
+        
         $router = new Router;
-
-        $route = new MockRoute_FailToFindRoute();
-
         $router->addRoute( 'myroute', $route );
 
-        $router->findRoute( '/fail/to/find/this/route' );
+        $router->findRoute($find_path);
     }
 
     /**
-     * @depends testAddRoute
+     * When more than one route exists, find the right one.
      */
     public function testFindRouteInManyRoutes()
     {
-        $router = new Router;
-
-        $id_route = new MockRoute_FindRouteInManyRoutesTrue();
-
-        $router->addRoute( 'id', $id_route );
-
-        //Here is a default route (should go last)
-        $def_route = new MockRoute_FindRouteInManyRoutesFalse();
-    
-        $router->addRoute( 'default', $def_route );
-
-        //We should only find the id_route defined above
         $find_path = '/parts/show/100';
+        
+        $id_route = $this->getMock('Route');
+        $id_route->expects($this->atLeastOnce())
+                 ->method('matchMap')
+                 ->with($this->equalTo($find_path))
+                 ->will($this->returnValue(true));
+
+        $def_route = $this->getMock('Route');
+        $def_route->expects($this->any())
+                  ->method('matchMap')
+                  ->will($this->returnValue(false));
+        
+        $router = new Router;
+        $router->addRoute( 'id', $id_route );
+        $router->addRoute( 'default', $def_route );
+        
         $found_route = $router->findRoute( $find_path );
         
-        if( TRUE === is_object( $found_route ) )
-        {
-            $this->assertSame($id_route, $found_route);
-        }
-        else
-        {
-            $this->fail( 'Found result is not an Object' );
-        }
-    }
-
-    public function testMethodsAreChainable()
-    {
-        $router = new Router;
-
-        $this->assertSame($router, $router->addRoute('test', new Route));
+        $this->assertSame($id_route, $found_route);
     }
     
+    /**
+     * addRoute should return itself
+     */
+    public function testMethodsAreChainable()
+    {
+        $route = $this->getMock('Route');
+        $router = new Router;
+
+        $this->assertSame($router, $router->addRoute('test', $route));
+    }
+    
+    /**
+     * Query parameters should not be considered when matching routes. 
+     */
     public function testQueryParameters()
     {
         $router = new Router;
-        $route = new Route( "/2008-08-01/Accounts/:id/IncomingPhoneNumbers" );
-        $route->setMapClass( 'IncomingPhoneNumbers' )->setMapMethod( 'list' );
-        $route->addDynamicElement( ':id', ':id' );
+        
+        $route = $this->getMock('Route');
+        $route->expects($this->atLeastOnce())
+               ->method('matchMap')
+               ->with($this->equalTo('/2008-08-01/Accounts/1/IncomingPhoneNumbers?a=1&b=2'))
+               ->will($this->returnValue(true));
+        
         $router->addRoute('test', $route);
         $found = $router->findRoute( '/2008-08-01/Accounts/1/IncomingPhoneNumbers?a=1&b=2' );
         
         $this->assertSame($found, $route);
+    }
+    
+    /**
+     * When two matching routes exist, the first one added should be matched. 
+     */
+    public function testFindRoutesInTheOrderTheyAreAdded()
+    {
+        $router = new Router;
+        
+        $route1 = $this->getMock('Route');
+        $route2 = $this->getMock('Route');
+
+        $route1->expects($this->atLeastOnce())
+               ->method('matchMap')
+               ->with($this->equalTo('/foo/bar'))
+               ->will($this->returnValue(true));
+        
+        $route2->expects($this->any())
+               ->method('matchMap')
+               ->will($this->returnValue(true));
+        
+        $router->addRoute('route1', $route1);
+        $router->addRoute('route2', $route2);
+        
+        $matchedRoute = $router->findRoute('/foo/bar');
+        $this->assertSame($route1, $matchedRoute);
     }
 }
 

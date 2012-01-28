@@ -3,95 +3,6 @@
 include_once(dirname(__FILE__) . '/../lib/Dispatcher.php');
 include_once(dirname(__FILE__) . '/../lib/Route.php');
 
-class MockRoute_ClassFileNotFound extends Route
-{
-    public function matchMap(){
-        return TRUE;
-    }
-
-    public function getMapClass() {
-        return 'noclassnameClass';
-    }
-
-    public function getMapMethod() {
-        return 'method';
-    }
-}
-
-class MockRoute_CatchClassNotSpecified extends Route
-{
-    public function matchMap(){
-        return TRUE;
-    }
-
-    public function getMapClass() {
-        return '';
-    }
-
-    public function getMapMethod() {
-        return 'method';
-    }
-}
-
-class MockRoute_CatchMethodNotSpecified extends Route
-{
-    public function matchMap(){
-        return TRUE;
-    }
-
-    public function getMapClass() {
-        return 'someclass';
-    }
-
-    public function getMapMethod() {
-        return '';
-    }
-}
-
-class MockRoute_CatchBadClassName extends Route
-{
-    public function matchMap(){
-        return TRUE;
-    }
-
-    public function getMapClass() {
-        return 'foo\"';
-    }
-
-    public function getMapMethod() {
-        return 'method';
-    }
-}
-
-class MockRoute_CatchClassMethodNotFound extends Route
-{
-    public function matchMap(){
-        return TRUE;
-    }
-
-    public function getMapClass() {
-        return 'foo';
-    }
-
-    public function getMapMethod() {
-        return 'nomethod';
-    }
-}
-
-class MockRoute_Success extends Route
-{
-    public function matchMap(){
-        return TRUE;
-    }
-
-    public function getMapClass() {
-        return 'foo';
-    }
-
-    public function getMapMethod() {
-        return 'bar';
-    }
-}
 
 /*----------------------------------------------------------------------------*/
 
@@ -108,7 +19,7 @@ class DispatcherTest extends PHPUnit_Framework_TestCase
         $contents = "<?php\n"
                   . "class fooClass {\n"
                   . "    public function bar( \$args ) {\n"
-                  . "        //print_r(\$args);\n"
+                  . "        return 'bar';\n"
                   . "    }\n"
                   . "}\n"
                   . "?>\n"
@@ -118,24 +29,34 @@ class DispatcherTest extends PHPUnit_Framework_TestCase
         fwrite($fh, $contents);
         fclose($fh);
     }
-
+    
+    /**
+     * @expectedException classFileNotFoundException
+     */
     public function testCatchClassFileNotFound()
     {
-        $route = new MockRoute_ClassFileNotFound;
+        $path = '/no_class/bar/55';
+        
+        $route = $this->getMock('Route');
+        $route->expects($this->any())
+              ->method('matchMap')
+              ->will($this->returnValue(true));
+        $route->expects($this->any())
+              ->method('getMapClass')
+              ->will($this->returnValue('noclassnameClass'));
+        $route->expects($this->any())
+              ->method('getMapMethod')
+              ->will($this->returnValue('method'));
 
-        $route->matchMap('/no_class/bar/55');
+        $route->matchMap($path);
 
         $dispatcher = new Dispatcher;
-        
-        try {
-            $dispatcher->dispatch( $route );
-        } catch ( classFileNotFoundException $exception ) {
-            return;
-        }
-            
-        $this->fail('Try Catch failed ');
+        $dispatcher->dispatch( $route );
     }
-
+    
+    /**
+     * @expectedException classNameNotFoundException
+     */
     public function testCatchClassNameNotFound()
     {
         $contents = "<?php\n"
@@ -150,104 +71,129 @@ class DispatcherTest extends PHPUnit_Framework_TestCase
         $fh = fopen('noclassnameClass.php', 'w');
         fwrite($fh, $contents);
         fclose($fh);
-
-        $route = new MockRoute_ClassFileNotFound();
+        
+        $route = $this->getMock('Route');
+        $route->expects($this->any())
+              ->method('matchMap')
+              ->will($this->returnValue(true));
+        $route->expects($this->any())
+              ->method('getMapClass')
+              ->will($this->returnValue('noclassnameClass'));
+        $route->expects($this->any())
+              ->method('getMapMethod')
+              ->will($this->returnValue('method'));
 
         $dispatcher = new Dispatcher;
-
-        try {
-            $dispatcher->dispatch( $route );
-        } catch ( classNameNotFoundException $exception ) {
-            return;
-        }
-
-
-        $this->fail('Catching class name not found failed ');
+        $dispatcher->dispatch( $route );
     }
-
+    
+    /**
+     * @expectedException classNotSpecifiedException
+     */
     public function testCatchClassNotSpecified()
     {
-        $route = new MockRoute_CatchClassNotSpecified();
+        $route = $this->getMock('Route');
+        $route->expects($this->any())
+              ->method('matchMap')
+              ->will($this->returnValue(true));
+        $route->expects($this->any())
+              ->method('getMapClass')
+              ->will($this->returnValue(''));
+        $route->expects($this->any())
+              ->method('getMapMethod')
+              ->will($this->returnValue('method'));
 
         $dispatcher = new Dispatcher;
-
-        try {
-            $dispatcher->dispatch( $route );
-        } catch ( classNotSpecifiedException $exception ) {
-            return;
-        }
-
-        $this->fail('Catching class not specified failed ');
+        $dispatcher->dispatch( $route );
     }
-
+    
+    /**
+     * @expectedException badClassNameException
+     */
     public function testCatchBadClassName()
     {
-        $route = new MockRoute_CatchBadClassName();
+        $route = $this->getMock('Route');
+        $route->expects($this->any())
+              ->method('matchMap')
+              ->will($this->returnValue(true));
+        $route->expects($this->any())
+              ->method('getMapClass')
+              ->will($this->returnValue('foo\"'));
+        $route->expects($this->any())
+              ->method('getMapMethod')
+              ->will($this->returnValue('method'));
 
         $dispatcher = new Dispatcher;
-
-        try {
-            $dispatcher->dispatch( $route );
-        } catch ( badClassNameException $exception ) {
-            return;
-        }
-
-        $this->fail('Catching bad class name failed ');
+        $dispatcher->dispatch( $route );
     }
-
+    
+    /**
+     * @expectedException methodNotSpecifiedException
+     */
     public function testCatchMethodNotSpecified()
     {
         $this->helperCreateTestClassFile();
-
-        $route = new MockRoute_CatchMethodNotSpecified();
+        
+        $route = $this->getMock('Route');
+        $route->expects($this->any())
+              ->method('matchMap')
+              ->will($this->returnValue(true));
+        $route->expects($this->any())
+              ->method('getMapClass')
+              ->will($this->returnValue('foo'));
+        $route->expects($this->any())
+              ->method('getMapMethod')
+              ->will($this->returnValue(''));
 
         $dispatcher = new Dispatcher;
-
-        try {
-            $dispatcher->dispatch( $route );
-        } catch ( methodNotSpecifiedException $exception ) {
-            return;
-        }
-
-        $this->fail('Catching method not specified failed ');
+        $dispatcher->dispatch( $route );
     }
-
+    
+    /**
+     * @expectedException classMethodNotFoundException
+     */
     public function testCatchClassMethodNotFound()
     {
         $this->helperCreateTestClassFile();
-
-        $route = new MockRoute_CatchClassMethodNotFound();
+        
+        $route = $this->getMock('Route');
+        $route->expects($this->any())
+              ->method('matchMap')
+              ->will($this->returnValue(true));
+        $route->expects($this->any())
+              ->method('getMapClass')
+              ->will($this->returnValue('foo'));
+        $route->expects($this->any())
+              ->method('getMapMethod')
+              ->will($this->returnValue('nomethod'));
 
         $dispatcher = new Dispatcher;
         $dispatcher->setSuffix('Class');
-
-        try {
-           $dispatcher->dispatch( $route );
-        } catch ( classMethodNotFoundException $exception ) {
-            return;
-        }
-
-        $this->fail('Catching class method not found failed ');
+        $dispatcher->dispatch( $route );
     }
 
     public function testSuccessfulDispatch()
     {
         $this->helperCreateTestClassFile();
-
-        $route = new MockRoute_Success();
+        
+        $route = $this->getMock('Route');
+        $route->expects($this->any())
+              ->method('matchMap')
+              ->will($this->returnValue(true));
+        $route->expects($this->any())
+              ->method('getMapClass')
+              ->will($this->returnValue('foo'));
+        $route->expects($this->any())
+              ->method('getMapMethod')
+              ->will($this->returnValue('bar'));
 
         $dispatcher = new Dispatcher;
         $dispatcher->setSuffix('Class');
+        
+        $this->assertTrue($route->matchMap('/foo/bar/55'));
 
-        if( TRUE === $route->matchMap('/foo/bar/55') )
-        {
-            $res = $dispatcher->dispatch($route);
-            $this->isTrue( $res );
-        }
-        else
-        {
-            $this->fail('The route could not be mapped');
-        }
+        $res = $dispatcher->dispatch($route);
+        $this->assertEquals('bar', $res);
     }
 
     public function testMethodsAreChainable()
