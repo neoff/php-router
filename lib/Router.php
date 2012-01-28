@@ -53,6 +53,17 @@ class Router
         //Check for the correct number of arguments
         if( count($args) !== count($this->routes[$name]->getDynamicElements()) )
             $match_ok = FALSE;
+        
+        /*
+         * This will assure arguments that are more specific are replaced before.
+         * That's important as if we have a route /:some/:something and we input :some before :something in the $args arrau :something's :some will also be replaced.
+         */
+        if (!function_exists('sortMoreSpecific')) {
+          function sortMoreSpecific($a, $b) {
+            return (strlen($b) - strlen($a));
+          }
+        }
+        uksort($args, 'sortMoreSpecific');
 
         $path = $this->routes[$name]->getPath();
         foreach( $args as $arg_key => $arg_value )
@@ -63,7 +74,8 @@ class Router
         }
 
         //Check that all of the argument keys matched up with the dynamic elements
-        if( FALSE === $match_ok ) throw new InvalidArgumentException;
+        if( FALSE === $match_ok )
+          throw new InvalidArgumentException;
 
         return $path;
     }

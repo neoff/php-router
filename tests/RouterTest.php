@@ -242,6 +242,40 @@ class RouterTest extends PHPUnit_Framework_TestCase
         $matchedRoute = $router->findRoute('/foo/bar');
         $this->assertSame($route1, $matchedRoute);
     }
+    
+    /**
+     * When similar dynamic elements exists (e.g. :some, :something) they should be treated independently by getUrl().
+     */
+    public function testGetUrlWhenDynamicPartsAreReversed()
+    {
+        $route = $this->getMock('Route');
+        $route->expects($this->atLeastOnce())
+              ->method('getDynamicElements')
+              ->will($this->returnValue(array(
+                  ':something' => ':something',
+                  ':some'      => ':some'
+              )));
+        $route->expects($this->atLeastOnce())
+              ->method('getPath')
+              ->will($this->returnValue('/:something/:some'));
+
+        $router = new Router();
+        $router->addRoute('the_route', $route);
+        $url = $router->getUrl('the_route', array(
+            ':something' => 'foo',
+            ':some' => 'bar'
+        ));
+
+        $this->assertEquals($url, '/foo/bar');
+
+        $url = $router->getUrl('the_route', array(
+            ':some' => 'bar',
+            ':something' => 'foo'
+        ));
+
+        $this->assertEquals($url, '/foo/bar');
+    }
+    
 }
 
 ?>
