@@ -18,13 +18,23 @@ class Router
      * @var string
      */
     private $prefix = "";
-
+    
+    /**
+     * Object constructor. Optionally pass array of routes to add
+     * 
+     * @param array[string]Route $routes 
+     */
     public function __construct( $routes = array() )
     {
         $this->addRoutes($routes);
     }
-
-    public function setPrefix( $prefix ) {
+    
+    /**
+     *
+     * @param string $prefix 
+     */
+    public function setPrefix( $prefix )
+    {
         $this->prefix = $prefix;
     }
     
@@ -43,7 +53,8 @@ class Router
 
     /**
      * Adds an array of named routes to the list of possible routes
-     * @param array $routes
+     * 
+     * @param array[string]Route $routes
      * @return Router
      */
     public function addRoutes( $routes )

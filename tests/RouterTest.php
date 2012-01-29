@@ -3,10 +3,23 @@
 include_once(dirname(__FILE__) . '/../lib/Route.php');
 include_once(dirname(__FILE__) . '/../lib/Router.php');
 
-/*----------------------------------------------------------------------------*/
-
 class RouterTest extends PHPUnit_Framework_TestCase
 {
+    /**
+     * Construction can accept optional array of routes to add 
+     */
+    public function testConstruction()
+    {
+        $router = new Router();
+        $routes = $router->getRoutes();
+        $this->assertCount(0, $routes);
+        
+        $route = $this->getMock('Route');
+        $router = new router(array('route' => $route));
+        $routes = $router->getRoutes();
+        $this->assertCount(1, $routes);
+    }
+  
     /**
      * Adding a route by name should behave as expected 
      */
@@ -21,6 +34,23 @@ class RouterTest extends PHPUnit_Framework_TestCase
         
         $this->assertFalse(array_key_exists('myroute', $routesBeforeAdd));
         $this->assertTrue( array_key_exists('myroute', $routes));
+    }
+    
+    /**
+     * Adding multiple routes by name 
+     */
+    public function testAddRoutes()
+    {
+        $route1 = $this->getMock('Route');
+        $route2 = $this->getMock('Route');
+        
+        $router = new Router();
+        $router->addRoutes(array('route1' => $route1, 'route2' => $route2));
+        
+        $routes = $router->getRoutes();
+        $this->assertCount(2, $routes);
+        $this->assertTrue( array_key_exists('route1', $routes));
+        $this->assertTrue( array_key_exists('route2', $routes));
     }
     
     /**
@@ -51,6 +81,39 @@ class RouterTest extends PHPUnit_Framework_TestCase
         
         $this->assertSame('/myclass/mymethod/1', $url);
         $this->assertNotSame('/myclass/mymethod/2', $url);
+    }
+    
+    /**
+     * If a prefix is set, it should be part of url 
+     */
+    public function testGetUrlWithPrefix()
+    {
+        $route = $this->getMock('Route');
+        $route->expects($this->atLeastOnce())
+              ->method('getDynamicElements')
+              ->will($this->returnValue(array(
+                  ':class'    => ':class',
+                  ':method'   => ':method',
+                  ':id'       => ':id'
+              )));
+        $route->expects($this->atLeastOnce())
+              ->method('getPath')
+              ->will($this->returnValue('/:class/:method/:id'));
+        
+        $host = "http://example.com";
+        $router = new Router;
+        $router->setPrefix($host);
+        $router->addRoute( 'myroute', $route );
+
+        $url = $router->getUrl( 'myroute', array(
+            ':class'    => 'myclass',
+            ':method'   => 'mymethod',
+            ':id'        => '1'
+        ));
+        
+        
+        
+        $this->assertSame("$host/myclass/mymethod/1", $url);
     }
 
     /**
@@ -277,5 +340,3 @@ class RouterTest extends PHPUnit_Framework_TestCase
     }
     
 }
-
-?>
