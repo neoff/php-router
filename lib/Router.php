@@ -12,6 +12,11 @@ class Router
      * @var array
      */
     private $routes = array();
+
+    public function __construct( $routes = array() )
+    {
+        $this->addRoutes($routes);
+    }
     
     /**
      * Adds a named route to the list of possible routes
@@ -31,7 +36,7 @@ class Router
      * @param array $routes
      * @return Router
      */
-    public function addRoutes( array $routes )
+    public function addRoutes( $routes )
     {
         $this->routes = array_merge($this->routes, $routes);
 
