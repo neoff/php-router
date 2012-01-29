@@ -12,6 +12,21 @@ class Router
      * @var array
      */
     private $routes = array();
+
+    /**
+     * A prefix to prepend when calling getUrl()
+     * @var string
+     */
+    private $prefix = "";
+
+    public function __construct( $routes = array() )
+    {
+        $this->addRoutes($routes);
+    }
+
+    public function setPrefix( $prefix ) {
+        $this->prefix = $prefix;
+    }
     
     /**
      * Adds a named route to the list of possible routes
@@ -22,6 +37,18 @@ class Router
     public function addRoute( $name, $route )
     {
         $this->routes[$name] = $route;
+
+        return $this;
+    }
+
+    /**
+     * Adds an array of named routes to the list of possible routes
+     * @param array $routes
+     * @return Router
+     */
+    public function addRoutes( $routes )
+    {
+        $this->routes = array_merge($this->routes, $routes);
 
         return $this;
     }
@@ -39,11 +66,12 @@ class Router
      * Builds and gets a url for the named route
      * @param string $name
      * @param array $args
+     * @param bool $prefixed
      * @throws NamedPathNotFoundException
      * @throws InvalidArgumentException
      * @return string the url
      */
-    public function getUrl( $name, $args = array() )
+    public function getUrl( $name, $args = array(), $prefixed = true )
     {
         if( TRUE !== array_key_exists($name, $this->routes) )
             throw new NamedPathNotFoundException;
@@ -77,7 +105,11 @@ class Router
         if( FALSE === $match_ok )
           throw new InvalidArgumentException;
 
-        return $path;
+        if ($prefixed) {
+            return $this->prefix . $path;
+        } else {
+            return $path;
+        }
     }
 
     /**
