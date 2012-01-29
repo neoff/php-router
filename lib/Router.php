@@ -13,9 +13,19 @@ class Router
      */
     private $routes = array();
 
+    /**
+     * A prefix to prepend when calling getUrl()
+     * @var string
+     */
+    private $prefix = "";
+
     public function __construct( $routes = array() )
     {
         $this->addRoutes($routes);
+    }
+
+    public function setPrefix( $prefix ) {
+        $this->prefix = $prefix;
     }
     
     /**
@@ -56,11 +66,12 @@ class Router
      * Builds and gets a url for the named route
      * @param string $name
      * @param array $args
+     * @param bool $prefixed
      * @throws NamedPathNotFoundException
      * @throws InvalidArgumentException
      * @return string the url
      */
-    public function getUrl( $name, $args = array() )
+    public function getUrl( $name, $args = array(), $prefixed = true )
     {
         if( TRUE !== array_key_exists($name, $this->routes) )
             throw new NamedPathNotFoundException;
@@ -82,7 +93,11 @@ class Router
         //Check that all of the argument keys matched up with the dynamic elements
         if( FALSE === $match_ok ) throw new InvalidArgumentException;
 
-        return $path;
+        if ($prefixed) {
+            return $this->prefix . $path;
+        } else {
+            return $path;
+        }
     }
 
     /**
