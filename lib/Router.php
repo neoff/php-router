@@ -27,6 +27,18 @@ class Router
     }
 
     /**
+     * Adds an array of named routes to the list of possible routes
+     * @param array $routes
+     * @return Router
+     */
+    public function addRoutes( array $routes )
+    {
+        $this->routes = array_merge($this->routes, $routes);
+
+        return $this;
+    }
+
+    /**
      * Returns the routes array
      * @return [Route]
      */
