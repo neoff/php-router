@@ -81,8 +81,22 @@ class Dispatcher
 
         //All above checks should have confirmed that the class can be instatiated
         // and the method can be called
+        return $this->dispatchController($class, $method, $arguments, $context);
+    }
+    
+    /**
+     * Create instance of controller and dispatch to it's method passing
+     * arguments. Override to change behavior.
+     * 
+     * @param string $class
+     * @param string $method
+     * @param array $args
+     * @return mixed - result of controller method
+     */
+    protected function dispatchController($class, $method, $args, $context = null)
+    {
         $obj = new $class($context);
-        return call_user_func(array($obj, $method), $arguments);
+        return call_user_func(array($obj, $method), $args);
     }
 
     /**
