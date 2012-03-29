@@ -11,13 +11,13 @@ class Dispatcher
      * The suffix used to append to the class name
      * @var string
      */
-    private $suffix;
+    protected $suffix;
 
     /**
      * The path to look for classes (or controllers)
      * @var string
      */
-    private $classPath;
+    protected $classPath;
 
     /**
      * Class constructor
@@ -123,7 +123,7 @@ class Dispatcher
         return $this;
     }
 
-    private function getFileExtension()
+    public function getFileExtension()
     {
         return '.php';
     }
