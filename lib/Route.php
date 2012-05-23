@@ -271,13 +271,9 @@ class Route
             {
                 $this->addMapArguments($key, $found_dynamic_arg);
             }
-
-            return TRUE;
         }
-        else
-        {
-            return FALSE;
-        }
+        
+        return ( $possible_match_string === $path_to_match );
     }
 }
 
