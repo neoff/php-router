@@ -1,6 +1,23 @@
 PHP Router
 ===========================
 
+End of Life Notice April 30, 2013
+-----------------------------
+It's been 4 years since my first commit to this project. Much has changed in the 
+php world since then. PHP 5.3 was released. It introduced a number of new features 
+such as namespaces. Better practices have been created by the PHP community in 
+projects such as [composer](http://getcomposer.org/) and [symfony](http://symfony.com/). 
+Developers have basically two options when creating a new application (or maintaining 
+an existing one). 1) Use an existing framework or 2) Create a framework. Frankly, 
+creating one's own framework given the already excellent list of available frameworks 
+is not a very good idea. I feel that writing one's own framework (or worse, 
+not using one at all) promotes a php culture of incorrect assertions and bad practice. 
+However, if someone is determined to create their own and is looking for a routing 
+component, I'd recommend [the symfony routing component](https://github.com/symfony/Routing). 
+You can find an excellent write up about integrating it 
+[here](http://fabien.potencier.org/article/50/create-your-own-framework-on-top-of-the-symfony2-components-part-1). 
+I will be removing this project on **April 30, 2013**
+
 Introduction
 -----------------------------
 
