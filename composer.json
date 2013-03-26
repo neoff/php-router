@@ -1,5 +1,5 @@
 {
-    "name": "lib/php-router",
+    "name": "neoff/php-router",
     "type": "library",
     "description": "Routing Component",
     "keywords": [],
