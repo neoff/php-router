@@ -86,7 +86,6 @@ class Router
     {
         if( TRUE !== array_key_exists($name, $this->routes) )
             throw new NamedPathNotFoundException;
-        
         $match_ok = TRUE;
 
         //Check for the correct number of arguments

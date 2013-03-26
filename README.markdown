@@ -155,6 +155,27 @@ Tell the dispatcher class where to look for your class files:
 
     $dispatcher->setClassPath('/path/to/controller_classes');
 
+### Setting Class/Controller namespaces
+
+*required* php >= 5.3.\* or later
+
+Tell the dispatcher class what namespaces look for you class files:
+
+    $dispatcher->setNamespace("Controller\\Admin");
+
+### Setting Class/Controller instanced method
+
+Tell the dispatcher class what static method initialised routing class:
+
+    $dispatcher->setInstance("getInstance");
+
+### Setting Class/Controller camelised name
+
+Camelised first later on class name, like /:controller/:method/:id is /data/load/1 whil be load like Data->load(1)
+
+    $dispatcher->setCameCase(true);
+
+
 Creating URLs
 -----------------------------
 
