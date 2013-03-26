@@ -1,0 +1,19 @@
+{
+    "name": "lib/php-router",
+    "type": "library",
+    "description": "Routing Component",
+    "keywords": [],
+    "homepage": "http://www.doctrine-project.org",
+    "license": "GNU General Public License",
+    "authors": [
+        {"name": "Rob Apodaca", "email": "rob.apodaca@gmail.com"}
+    ],
+    "require": {
+        "php": ">=5.3.2"
+    },
+    "autoload": {
+        "psr-0": {
+            "Routing": "lib"
+        }
+    }
+}
