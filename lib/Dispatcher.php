@@ -5,6 +5,7 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  * @link http://robap.github.com/php-router/
  */
+	require_once 'Exceprions.php';
 class Dispatcher
 {
 	/**
@@ -200,10 +201,5 @@ class Dispatcher
 	}
 }
 
-class badClassNameException extends Exception{}
-class classFileNotFoundException extends Exception{}
-class classNameNotFoundException extends Exception{}
-class classMethodNotFoundException extends Exception{}
-class classNotSpecifiedException extends Exception{}
-class methodNotSpecifiedException extends Exception{}
+
 

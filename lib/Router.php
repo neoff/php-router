@@ -5,6 +5,7 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  * @link http://robap.github.com/php-router/
  */
+	require_once 'Exceprions.php';
 class Router
 {
     /**
@@ -142,5 +143,4 @@ class Router
     }
 }
 
-class RouteNotFoundException extends Exception{}
-class NamedPathNotFoundException extends Exception{}
+
