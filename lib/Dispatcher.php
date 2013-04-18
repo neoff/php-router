@@ -5,7 +5,6 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  * @link http://robap.github.com/php-router/
  */
-	require_once 'Exceprions.php';
 class Dispatcher
 {
 	/**
