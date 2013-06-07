@@ -106,7 +106,8 @@ class Router
         $path = $this->routes[$name]->getPath();
         foreach( $args as $arg_key => $arg_value )
         {
-            $path = str_replace( $arg_key, $arg_value, $path, $count );
+            $path = str_replace("//", "/", str_replace( $arg_key, $arg_value, $path, $count ));
+
             if( 1 !== $count )
                 $match_ok = FALSE;
         }
