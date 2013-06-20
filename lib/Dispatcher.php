@@ -125,7 +125,7 @@ class Dispatcher
 			$obj = call_user_func($class.'::'.$this->instance, $context);
 		else
 			$obj = new $class($context);
-		return call_user_func(array($obj, $method), $args);
+		return call_user_func_array(array($obj, $method), array(&$args));
 	}
 
 	/**
